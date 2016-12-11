@@ -98,7 +98,6 @@ class ColorOtherOS:
             self.WARNING = '\033[93m'
             self.FAIL = '\033[91m'
             self.ENDC = '\033[0m'
-        #为了统一函数名字，所以将函数名写成red，其实是blue
         def print_red_text(self,print_text):
             print self.OKBLUE+print_text+self.ENDC
 
@@ -156,7 +155,7 @@ def social(url):
 
 def usage():
     print '''
-      phpMyAdmin crack v1.0 code by cainiu
+      phpMyAdmin crack v1.0 code by hdbdl
 '''
     print "<Usage>: python pmacrack.py -u \"http://www.test.com/phpMyAdmin/\" [options]\n"
     print "[options]:"
