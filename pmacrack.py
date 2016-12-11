@@ -16,7 +16,6 @@ import signal
 
 
 '''
-解决在Windows下乱码问题
 '''
 class UnicodeStreamFilter:
     def __init__(self, target):
